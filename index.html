@@ -11,6 +11,8 @@
       background-color: #f5f5dc; /* Light beige background */
     }
   </style>
+  <!-- Include dat.GUI library -->
+  <script src="https://cdn.jsdelivr.net/npm/dat.gui@0.7.6/build/dat.gui.min.js"></script>
   <!-- Make sure to include the noise.js library -->
   <script src="perlin.js"></script>
 </head>
@@ -26,20 +28,49 @@
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    const sentence = "PROTECT ME FROM WHAT I WANT";
-    const fontSize = 20;
-    const fontColor = "#ffb6c1"; // Light pink color
-    const fontStyle = `${fontSize}px serif`;
+    // dat.GUI settings
+    const gui = new dat.GUI();
+    const settings = {
+      opacity: 0.75,
+      alphaDecrement: 0.001,
+      rotationSpeed: 0.002,
+      movementSpeed: 0.002,
+      fontColor: "#ffb6c1",
+      emissionRate: 4,
+      fontSize: 20,
+      sentenceChoice: "protect me from what I want"
+    };
+
+    const sentences = {
+      "I still want my time with you": "I still want my time with you",
+      "protect me from what I want": "protect me from what I want",
+      "any surplus is immoral": "any surplus is immoral",
+      "you too are depraved": "you too are depraved",
+      "there's no other place": "there's no other place",
+      "you are guileless in your dreams": "you are guileless in your dreams",
+      "trust your eyes": "trust your eyes",
+      "make things alone": "make things alone",
+      "destroy nothing": "destroy nothing"
+    };
+
+    gui.add(settings, 'opacity', 0, 1).name('Sentence Opacity');
+    gui.add(settings, 'alphaDecrement', 0, 0.01).name('Alpha Decrement');
+    gui.add(settings, 'rotationSpeed', 0, 0.01).name('Rotation Speed');
+    gui.add(settings, 'movementSpeed', 0, 0.01).name('Movement Speed');
+    gui.addColor(settings, 'fontColor').name('Font Color');
+    gui.add(settings, 'emissionRate', 1, 10).step(1).name('Emission Rate');
+    gui.add(settings, 'fontSize', 10, 36).name('Font Size');
+    gui.add(settings, 'sentenceChoice', sentences).name('Choose Sentence');
 
     class Particle {
       constructor(x, y, text, rotation) {
         this.x = x;
         this.y = y;
         this.text = text;
-        this.size = fontSize;
-        this.color = fontColor;
+        this.size = settings.fontSize;
+        this.color = settings.fontColor;
         this.rotation = rotation;
-        this.alpha = .4;
+        this.alpha = .75;
         this.velocity = {
           x: (Math.random() - 0.5) * 0.5,
           y: (Math.random() - 0.5) * 0.5
@@ -48,19 +79,22 @@
 
       update() {
         this.size -= 0.1;
-        this.alpha -= 0.002;
+        this.alpha -= settings.alphaDecrement;
         this.x += this.velocity.x;
         this.y += this.velocity.y;
       }
 
       draw() {
+        const textOffsetX = noise.perlin2(this.x * 0.01, this.y * 0.01) * 50;
+        const textOffsetY = noise.perlin2(this.y * 0.01, this.x * 0.01) * 50;
+
         ctx.save();
-        ctx.translate(this.x, this.y);
+        ctx.translate(this.x + textOffsetX, this.y + textOffsetY);
         ctx.rotate(this.rotation);
-        ctx.fillStyle = this.color;
-        ctx.globalAlpha = this.alpha;
-        ctx.font = fontStyle;
-        ctx.fillText(this.text, -ctx.measureText(this.text).width / 2, 0); // Center the text
+        ctx.fillStyle = settings.fontColor;
+        ctx.globalAlpha = this.alpha * settings.opacity;
+        ctx.font = `${settings.fontSize}px serif`;
+        ctx.fillText(settings.sentenceChoice, -ctx.measureText(settings.sentenceChoice).width / 2, 0);
         ctx.restore();
       }
     }
@@ -68,14 +102,13 @@
     class ParticleEmitter {
       constructor() {
         this.particles = [];
-        this.noiseOffsetX = Math.random() * 1000; // Random starting point for X
-        this.noiseOffsetY = Math.random() * 1000; // Random starting point for Y
-        this.noiseIncrement = 0.002; // Slow speed through the noise space for smoothness
+        this.noiseOffsetX = Math.random() * 1000;
+        this.noiseOffsetY = Math.random() * 1000;
         this.updateEmitter(); // Initial update
       }
 
       createParticle() {
-        this.particles.push(new Particle(this.centerX, this.centerY, sentence, this.angle));
+        this.particles.push(new Particle(this.centerX, this.centerY, settings.sentenceChoice, this.angle));
       }
 
       updateEmitter() {
@@ -84,8 +117,8 @@
         this.centerX = canvas.width / 2 + noiseX;
         this.centerY = canvas.height / 2 + noiseY;
         this.angle = noise.perlin2(this.noiseOffsetX, this.noiseOffsetY) * Math.PI * 2;
-        this.noiseOffsetX += this.noiseIncrement;
-        this.noiseOffsetY += this.noiseIncrement;
+        this.noiseOffsetX += settings.movementSpeed;
+        this.noiseOffsetY += settings.movementSpeed;
       }
 
       update() {
@@ -113,7 +146,7 @@
 
       sentenceEmitter.updateEmitter();
 
-      if (frameCount % 4 === 0) {
+      if (frameCount % settings.emissionRate === 0) {
         sentenceEmitter.createParticle();
       }
 
@@ -128,4 +161,5 @@
   </script>
 </body>
 </html>
+
 
