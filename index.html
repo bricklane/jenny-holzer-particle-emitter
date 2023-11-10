@@ -71,25 +71,21 @@
         this.noiseOffsetX = Math.random() * 1000; // Random starting point for X
         this.noiseOffsetY = Math.random() * 1000; // Random starting point for Y
         this.noiseIncrement = 0.002; // Slow speed through the noise space for smoothness
+        this.updateEmitter(); // Initial update
       }
 
       createParticle() {
-        // Harmonograph-like movement using two Perlin noise functions
-        const noiseX = noise.perlin2(this.noiseOffsetX, 0) * canvas.width * 0.55; // Scaled for gentle movement
-        const noiseY = noise.perlin2(this.noiseOffsetY, 0) * canvas.height * 0.5; // Scaled for gentle movement
+        this.particles.push(new Particle(this.centerX, this.centerY, sentence, this.angle));
+      }
 
-        const centerX = canvas.width / 2 + noiseX;
-        const centerY = canvas.height / 2 + noiseY;
-
-        // Use Perlin noise to get a smooth, natural-looking angle
-        let angle = noise.perlin2(this.noiseOffsetX, this.noiseOffsetY) * Math.PI * 2;
-
-        // Increment the offsets
+      updateEmitter() {
+        const noiseX = noise.perlin2(this.noiseOffsetX, 0) * canvas.width * 0.55;
+        const noiseY = noise.perlin2(this.noiseOffsetY, 0) * canvas.height * 0.55;
+        this.centerX = canvas.width / 2 + noiseX;
+        this.centerY = canvas.height / 2 + noiseY;
+        this.angle = noise.perlin2(this.noiseOffsetX, this.noiseOffsetY) * Math.PI * 2;
         this.noiseOffsetX += this.noiseIncrement;
         this.noiseOffsetY += this.noiseIncrement;
-
-        // Create the new particle at the calculated position
-        this.particles.push(new Particle(centerX, centerY, sentence, angle));
       }
 
       update() {
@@ -115,12 +111,19 @@
       requestAnimationFrame(animate);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      sentenceEmitter.createParticle(); // Create a particle every frame for continuous emission
+      sentenceEmitter.updateEmitter();
+
+      if (frameCount % 4 === 0) {
+        sentenceEmitter.createParticle();
+      }
 
       sentenceEmitter.update();
       sentenceEmitter.draw();
+
+      frameCount++;
     }
 
+    let frameCount = 0;
     animate();
   </script>
 </body>
