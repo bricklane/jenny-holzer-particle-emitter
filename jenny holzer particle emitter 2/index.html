@@ -27,7 +27,7 @@
     // Fixed settings
     const settings = {
       opacity: 0.75,
-      alphaDecrementBase: 0.0037,
+      alphaDecrementBase: 0.00037,
       fontColor: "#ffb6c1",
       emissionRate: 4,
       fontSize: 20,
@@ -46,7 +46,7 @@
         this.alphaDecrement = alphaDecrement;
         this.velocity = {
           x: 0,
-          y: -Math.random() * 0.5 // Making particles move upwards
+          y: -Math.random() * 0.9 // Making particles move upwards
         };
       }
 
@@ -71,10 +71,13 @@
       }
 
       createParticle() {
+        let cumulativeWidth = 0;
         words.forEach((word, index) => {
-          const x = canvas.width / 2 + (index - words.length / 2) * settings.fontSize * 2;
+          const wordWidth = ctx.measureText(word).width;
+          const x = (canvas.width - ctx.measureText(settings.sentenceChoice).width) / 2 + cumulativeWidth;
+          cumulativeWidth += wordWidth + settings.fontSize; // Add space after each word
           const y = canvas.height;
-          const alphaDecrement = settings.alphaDecrementBase + index * 0.0005; // Unique fade timing for each word
+          const alphaDecrement = settings.alphaDecrementBase + index * 0.0005;
           this.particles.push(new Particle(x, y, word, alphaDecrement));
         });
       }
@@ -97,6 +100,7 @@
     }
 
     const sentenceEmitter = new ParticleEmitter();
+    ctx.font = `${settings.fontSize}px serif`; // Set font to measure text width
 
     let frameCount = 0;
 
