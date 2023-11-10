@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Perlin Noise Text Rotation</title>
+  <title>Perlin Noise Text Rotation and Movement</title>
   <style>
     body {
       margin: 0;
@@ -68,22 +68,28 @@
     class ParticleEmitter {
       constructor() {
         this.particles = [];
-        this.noiseOffset = 0;
-        this.noiseIncrement = 0.01;
-        this.angle = 0;
+        this.noiseOffsetX = Math.random() * 1000; // Random starting point for X
+        this.noiseOffsetY = Math.random() * 1000; // Random starting point for Y
+        this.noiseIncrement = 0.002; // Slow speed through the noise space for smoothness
       }
 
       createParticle() {
-        const center = {
-          x: canvas.width / 2,
-          y: canvas.height / 2
-        };
+        // Harmonograph-like movement using two Perlin noise functions
+        const noiseX = noise.perlin2(this.noiseOffsetX, 0) * canvas.width * 0.55; // Scaled for gentle movement
+        const noiseY = noise.perlin2(this.noiseOffsetY, 0) * canvas.height * 0.5; // Scaled for gentle movement
 
-        // Incrementally change the angle using Perlin noise
-        this.angle += (noise.perlin2(this.noiseOffset, this.noiseOffset) * 0.2);
-        this.noiseOffset += this.noiseIncrement;
+        const centerX = canvas.width / 2 + noiseX;
+        const centerY = canvas.height / 2 + noiseY;
 
-        this.particles.push(new Particle(center.x, center.y, sentence, this.angle));
+        // Use Perlin noise to get a smooth, natural-looking angle
+        let angle = noise.perlin2(this.noiseOffsetX, this.noiseOffsetY) * Math.PI * 2;
+
+        // Increment the offsets
+        this.noiseOffsetX += this.noiseIncrement;
+        this.noiseOffsetY += this.noiseIncrement;
+
+        // Create the new particle at the calculated position
+        this.particles.push(new Particle(centerX, centerY, sentence, angle));
       }
 
       update() {
@@ -119,5 +125,4 @@
   </script>
 </body>
 </html>
-
 
