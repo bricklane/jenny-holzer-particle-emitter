@@ -32,7 +32,7 @@
     const gui = new dat.GUI();
     const settings = {
       opacity: 0.75,
-      alphaDecrement: 0.001,
+      alphaDecrement: 0.0037,
       rotationSpeed: 0.002,
       movementSpeed: 0.002,
       fontColor: "#ffb6c1",
@@ -78,15 +78,15 @@
       }
 
       update() {
-        this.size -= 0.1;
+        //this.size -= 0.1;
         this.alpha -= settings.alphaDecrement;
-        this.x += this.velocity.x;
-        this.y += this.velocity.y;
+        //this.x += this.velocity.x;
+        //this.y += this.velocity.y;
       }
 
       draw() {
-        const textOffsetX = noise.perlin2(this.x * 0.01, this.y * 0.01) * 50;
-        const textOffsetY = noise.perlin2(this.y * 0.01, this.x * 0.01) * 50;
+        const textOffsetX = noise.perlin2(this.x * 0.01, this.y * 0.01) * 5;
+        const textOffsetY = noise.perlin2(this.y * 0.01, this.x * 0.01) * 5;
 
         ctx.save();
         ctx.translate(this.x + textOffsetX, this.y + textOffsetY);
