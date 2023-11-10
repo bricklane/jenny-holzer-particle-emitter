@@ -27,19 +27,23 @@
     // Fixed settings
     const settings = {
       opacity: 0.75,
-      alphaDecrement: 0.0037,
+      alphaDecrementBase: 0.0037,
       fontColor: "#ffb6c1",
       emissionRate: 4,
       fontSize: 20,
-      sentenceChoice: "protect me from what I want"
+      sentenceChoice: "it is in your self-interest to find a way to be very tender"
     };
 
+    // Split sentence into words
+    const words = settings.sentenceChoice.split(' ');
+
     class Particle {
-      constructor(x, y, text) {
+      constructor(x, y, text, alphaDecrement) {
         this.x = x;
         this.y = y;
         this.text = text;
-        this.alpha = .75;
+        this.alpha = 1.0; // Start fully visible
+        this.alphaDecrement = alphaDecrement;
         this.velocity = {
           x: 0,
           y: -Math.random() * 0.5 // Making particles move upwards
@@ -47,7 +51,7 @@
       }
 
       update() {
-        this.alpha -= settings.alphaDecrement;
+        this.alpha -= this.alphaDecrement;
         this.y += this.velocity.y;
       }
 
@@ -67,9 +71,12 @@
       }
 
       createParticle() {
-        const x = canvas.width / 2;
-        const y = canvas.height;
-        this.particles.push(new Particle(x, y, settings.sentenceChoice));
+        words.forEach((word, index) => {
+          const x = canvas.width / 2 + (index - words.length / 2) * settings.fontSize * 2;
+          const y = canvas.height;
+          const alphaDecrement = settings.alphaDecrementBase + index * 0.0005; // Unique fade timing for each word
+          this.particles.push(new Particle(x, y, word, alphaDecrement));
+        });
       }
 
       update() {
@@ -96,7 +103,6 @@
     function animate() {
       requestAnimationFrame(animate);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // Removed drawSentence call to not display sentence in viewport
       if (frameCount % settings.emissionRate === 0) {
         sentenceEmitter.createParticle();
       }
