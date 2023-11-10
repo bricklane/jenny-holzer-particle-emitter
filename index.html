@@ -39,7 +39,7 @@
         this.size = fontSize;
         this.color = fontColor;
         this.rotation = rotation;
-        this.alpha = 1;
+        this.alpha = .4;
         this.velocity = {
           x: (Math.random() - 0.5) * 0.5,
           y: (Math.random() - 0.5) * 0.5
@@ -48,7 +48,7 @@
 
       update() {
         this.size -= 0.1;
-        this.alpha -= 0.005;
+        this.alpha -= 0.001;
         this.x += this.velocity.x;
         this.y += this.velocity.y;
       }
