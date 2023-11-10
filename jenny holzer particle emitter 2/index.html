@@ -21,20 +21,17 @@
 
     const canvas = document.getElementById('particleCanvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
 
     // Fixed settings
     const settings = {
       opacity: 0.75,
-      alphaDecrementBase: 0.00037,
+      alphaDecrementBase: 0.0005,
       fontColor: "#ffb6c1",
       emissionRate: 4,
       fontSize: 20,
       sentenceChoice: "it is in your self-interest to find a way to be very tender"
     };
 
-    // Split sentence into words
     const words = settings.sentenceChoice.split(' ');
 
     class Particle {
@@ -46,21 +43,28 @@
         this.alphaDecrement = alphaDecrement;
         this.velocity = {
           x: 0,
-          y: -Math.random() * 0.5 // Restored varying upward movement
+          y: -Math.random() * 1 // Varied upward movement
         };
+        this.rotation = 0; // Initialize rotation
       }
 
       update() {
         this.alpha -= this.alphaDecrement;
         this.y += this.velocity.y;
+
+        // Adjust rotation using Perlin noise
+        this.rotation += noise.perlin2(this.x * 0.005, this.y * 0.005) * 0.005;
+        // Small rotation
       }
 
       draw() {
         ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation); // Apply rotation
         ctx.fillStyle = settings.fontColor;
         ctx.globalAlpha = this.alpha * settings.opacity;
         ctx.font = `${settings.fontSize}px serif`;
-        ctx.fillText(this.text, this.x, this.y);
+        ctx.fillText(this.text, 0, 0);
         ctx.restore();
       }
     }
@@ -70,16 +74,28 @@
         this.particles = [];
       }
 
+      clearParticles() {
+        this.particles = [];
+      }
+
       createParticle() {
         let cumulativeWidth = 0;
+        let totalWidth = 0;
+
         words.forEach((word, index) => {
-          ctx.font = `${settings.fontSize}px serif`; // Ensure the font is set for correct measurement
-          const wordWidth = ctx.measureText(word).width;
-          if (index === 0) {
-            cumulativeWidth = (canvas.width - ctx.measureText(settings.sentenceChoice).width) / 2;
+          ctx.font = `${settings.fontSize}px serif`;
+          totalWidth += ctx.measureText(word).width;
+          if (index < words.length - 1) {
+            totalWidth += settings.fontSize;
           }
-          const x = cumulativeWidth;
-          cumulativeWidth += wordWidth + settings.fontSize; // Add space after each word
+        });
+
+        let startX = (canvas.width - totalWidth) / 2;
+
+        words.forEach((word, index) => {
+          const wordWidth = ctx.measureText(word).width;
+          const x = startX + cumulativeWidth;
+          cumulativeWidth += wordWidth + settings.fontSize;
           const y = canvas.height;
           const alphaDecrement = settings.alphaDecrementBase + index * 0.0005;
           this.particles.push(new Particle(x, y, word, alphaDecrement));
@@ -87,6 +103,10 @@
       }
 
       update() {
+        if (this.particles.length === 0) {
+          return;
+        }
+
         for (let i = this.particles.length - 1; i >= 0; i--) {
           const particle = this.particles[i];
           particle.update();
@@ -105,12 +125,23 @@
 
     const sentenceEmitter = new ParticleEmitter();
 
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      sentenceEmitter.clearParticles();
+      sentenceEmitter.createParticle();
+    }
+
+    // Call resizeCanvas initially and on every window resize
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
     let frameCount = 0;
 
     function animate() {
       requestAnimationFrame(animate);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (frameCount % settings.emissionRate === 0) {
+      if (frameCount % settings.emissionRate === 0 && canvas.width !== 0) {
         sentenceEmitter.createParticle();
       }
       sentenceEmitter.update();
@@ -122,4 +153,3 @@
   </script>
 </body>
 </html>
-
