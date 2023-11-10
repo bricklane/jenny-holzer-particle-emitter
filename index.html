@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fractal Particle Emitter</title>
+  <title>Perlin Noise Text Rotation</title>
   <style>
     body {
       margin: 0;
@@ -11,11 +11,16 @@
       background-color: #f5f5dc; /* Light beige background */
     }
   </style>
+  <!-- Make sure to include the noise.js library -->
+  <script src="perlin.js"></script>
 </head>
 <body>
   <canvas id="particleCanvas"></canvas>
 
   <script>
+    // Initialize the noise library
+    noise.seed(Math.random());
+
     const canvas = document.getElementById('particleCanvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
@@ -25,12 +30,6 @@
     const fontSize = 20;
     const fontColor = "#ffb6c1"; // Light pink color
     const fontStyle = `${fontSize}px serif`;
-
-    function generatePerlinNoise(x, y) {
-      // Simple Perlin-like noise function based on sine waves
-      const n = x + y * 57;
-      return (Math.sin(n * 10_000) * 1_000_000) % 1;
-    }
 
     class Particle {
       constructor(x, y, text, rotation) {
@@ -42,8 +41,8 @@
         this.rotation = rotation;
         this.alpha = 1;
         this.velocity = {
-          x: (generatePerlinNoise(x, y) - 0.5) * 0.5,
-          y: (generatePerlinNoise(y, x) - 0.5) * 0.5
+          x: (Math.random() - 0.5) * 0.5,
+          y: (Math.random() - 0.5) * 0.5
         };
       }
 
@@ -69,7 +68,9 @@
     class ParticleEmitter {
       constructor() {
         this.particles = [];
-        this.angle = 0; // Initial angle for gentle incremental rotation
+        this.noiseOffset = 0;
+        this.noiseIncrement = 0.01;
+        this.angle = 0;
       }
 
       createParticle() {
@@ -78,8 +79,9 @@
           y: canvas.height / 2
         };
 
-        // Increment the angle slightly for the next particle
-        this.angle += 0.01;
+        // Incrementally change the angle using Perlin noise
+        this.angle += (noise.perlin2(this.noiseOffset, this.noiseOffset) * 0.2);
+        this.noiseOffset += this.noiseIncrement;
 
         this.particles.push(new Particle(center.x, center.y, sentence, this.angle));
       }
@@ -117,4 +119,5 @@
   </script>
 </body>
 </html>
+
 
