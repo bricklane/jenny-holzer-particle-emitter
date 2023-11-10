@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fractal Particle Emitter</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #f5f5dc; /* Light beige background */
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particleCanvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const sentence = "PROTECT ME FROM WHAT I WANT";
+    const fontSize = 20;
+    const fontColor = "#ffb6c1"; // Light pink color
+    const fontStyle = `${fontSize}px serif`;
+
+    function generatePerlinNoise(x, y) {
+      // Simple Perlin-like noise function based on sine waves
+      const n = x + y * 57;
+      return (Math.sin(n * 10_000) * 1_000_000) % 1;
+    }
+
+    class Particle {
+      constructor(x, y, text, rotation) {
+        this.x = x;
+        this.y = y;
+        this.text = text;
+        this.size = fontSize;
+        this.color = fontColor;
+        this.rotation = rotation;
+        this.alpha = 1;
+        this.velocity = {
+          x: (generatePerlinNoise(x, y) - 0.5) * 0.5,
+          y: (generatePerlinNoise(y, x) - 0.5) * 0.5
+        };
+      }
+
+      update() {
+        this.size -= 0.1;
+        this.alpha -= 0.005;
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
+      }
+
+      draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        ctx.fillStyle = this.color;
+        ctx.globalAlpha = this.alpha;
+        ctx.font = fontStyle;
+        ctx.fillText(this.text, -ctx.measureText(this.text).width / 2, 0); // Center the text
+        ctx.restore();
+      }
+    }
+
+    class ParticleEmitter {
+      constructor() {
+        this.particles = [];
+        this.angle = 0; // Initial angle for gentle incremental rotation
+      }
+
+      createParticle() {
+        const center = {
+          x: canvas.width / 2,
+          y: canvas.height / 2
+        };
+
+        // Increment the angle slightly for the next particle
+        this.angle += 0.01;
+
+        this.particles.push(new Particle(center.x, center.y, sentence, this.angle));
+      }
+
+      update() {
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+          const particle = this.particles[i];
+          particle.update();
+          if (particle.alpha <= 0) {
+            this.particles.splice(i, 1);
+          }
+        }
+      }
+
+      draw() {
+        for (const particle of this.particles) {
+          particle.draw();
+        }
+      }
+    }
+
+    const sentenceEmitter = new ParticleEmitter();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      sentenceEmitter.createParticle(); // Create a particle every frame for continuous emission
+
+      sentenceEmitter.update();
+      sentenceEmitter.draw();
+    }
+
+    animate();
+  </script>
+</body>
+</html>
+
