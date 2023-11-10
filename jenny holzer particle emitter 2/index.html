@@ -27,7 +27,7 @@
     // Fixed settings
     const settings = {
       opacity: 0.75,
-      alphaDecrementBase: 0.0003,
+      alphaDecrementBase: 0.00037,
       fontColor: "#ffb6c1",
       emissionRate: 4,
       fontSize: 20,
@@ -46,7 +46,7 @@
         this.alphaDecrement = alphaDecrement;
         this.velocity = {
           x: 0,
-          y: -Math.random() * 2 // Varied upward movement
+          y: -Math.random() * 0.5 // Restored varying upward movement
         };
       }
 
@@ -72,23 +72,13 @@
 
       createParticle() {
         let cumulativeWidth = 0;
-        let totalWidth = 0;
-        
-        // Calculate total width of the sentence
         words.forEach((word, index) => {
-          ctx.font = `${settings.fontSize}px serif`; // Set the font for correct measurement
-          totalWidth += ctx.measureText(word).width;
-          if (index < words.length - 1) {
-            totalWidth += settings.fontSize; // Add space after each word except the last
-          }
-        });
-
-        let startX = (canvas.width - totalWidth) / 2;
-
-        // Create particles with correct spacing
-        words.forEach((word, index) => {
+          ctx.font = `${settings.fontSize}px serif`; // Ensure the font is set for correct measurement
           const wordWidth = ctx.measureText(word).width;
-          const x = startX + cumulativeWidth;
+          if (index === 0) {
+            cumulativeWidth = (canvas.width - ctx.measureText(settings.sentenceChoice).width) / 2;
+          }
+          const x = cumulativeWidth;
           cumulativeWidth += wordWidth + settings.fontSize; // Add space after each word
           const y = canvas.height;
           const alphaDecrement = settings.alphaDecrementBase + index * 0.0005;
@@ -132,3 +122,4 @@
   </script>
 </body>
 </html>
+
