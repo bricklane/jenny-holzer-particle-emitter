@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="twitter:image" content="preview.png">
+  <title>jenny holzer particle emitter</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #f5f5dc; /* Light beige background */
+    }
+  </style>
+  <script src="perlin.js"></script>
+</head>
+<body>
+  <canvas id="particleCanvas"></canvas>
+  <script>
+    noise.seed(Math.random());
+
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Fixed settings
+    const settings = {
+      opacity: 0.75,
+      alphaDecrement: 0.0037,
+      fontColor: "#ffb6c1",
+      emissionRate: 4,
+      fontSize: 20,
+      sentenceChoice: "protect me from what I want"
+    };
+
+    class Particle {
+      constructor(x, y, text) {
+        this.x = x;
+        this.y = y;
+        this.text = text;
+        this.alpha = .75;
+        this.velocity = {
+          x: 0,
+          y: -Math.random() * 0.5 // Making particles move upwards
+        };
+      }
+
+      update() {
+        this.alpha -= settings.alphaDecrement;
+        this.y += this.velocity.y;
+      }
+
+      draw() {
+        ctx.save();
+        ctx.fillStyle = settings.fontColor;
+        ctx.globalAlpha = this.alpha * settings.opacity;
+        ctx.font = `${settings.fontSize}px serif`;
+        ctx.fillText(this.text, this.x, this.y);
+        ctx.restore();
+      }
+    }
+
+    class ParticleEmitter {
+      constructor() {
+        this.particles = [];
+      }
+
+      createParticle() {
+        const x = canvas.width / 2;
+        const y = canvas.height;
+        this.particles.push(new Particle(x, y, settings.sentenceChoice));
+      }
+
+      update() {
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+          const particle = this.particles[i];
+          particle.update();
+          if (particle.alpha <= 0) {
+            this.particles.splice(i, 1);
+          }
+        }
+      }
+
+      draw() {
+        for (const particle of this.particles) {
+          particle.draw();
+        }
+      }
+    }
+
+    const sentenceEmitter = new ParticleEmitter();
+
+    let frameCount = 0;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Removed drawSentence call to not display sentence in viewport
+      if (frameCount % settings.emissionRate === 0) {
+        sentenceEmitter.createParticle();
+      }
+      sentenceEmitter.update();
+      sentenceEmitter.draw();
+      frameCount++;
+    }
+
+    animate();
+  </script>
+</body>
+</html>
