@@ -79,7 +79,7 @@
       draw() {
               ctx.font = `${settings.fontSize}px serif`;
 
-              const textWidth = ctx.measureText("in total darkness").width;
+              const textWidth = ctx.measureText("in total darkness").width + 10;
               const rotationX = this.x + (settings.rotationPoint * textWidth);
 
               ctx.save();
