@@ -28,22 +28,22 @@
     const gui = new dat.GUI();
     const settings = {
       opacity: 0.75,
-      alphaDecrement: 0.00005, 
+      alphaDecrement: 0.00005, // higher is faster fading
       rotationSpeed: 0.01, 
-      maxRotation: Math.PI, 
+      maxRotation: 180, 
       movementSpeed: 0.7, 
       fontColor: "#ffb6c1",
-      emissionRate: 6, 
+      emissionRate: 6, // lower is less frequent
       fontSize: 30,
       phraseHeight: 950, //canvas.height / 2 
-      rotationPoint: 0 // Rotation point (0: left, 1: right)
+      rotationPoint: 1 // Rotation point (0: left, 1: right)
     };
 
     gui.add(settings, 'opacity', 0, 1).name('Opacity');
     gui.add(settings, 'alphaDecrement', 0, 0.01).name('Fade');
     gui.add(settings, 'rotationSpeed', 0, 0.02).name('Rotation');
     gui.add(settings, 'movementSpeed', 0, 1).name('Velocity');
-    gui.add(settings, 'maxRotation', 0, Math.PI).name('Max Rotation Angle');
+    gui.add(settings, 'maxRotation', 0, 180).name('Max Rotation Angle');
     gui.addColor(settings, 'fontColor').name('Font Color');
     gui.add(settings, 'emissionRate', 1, 100).step(1).name('Emission Rate');
     gui.add(settings, 'fontSize', 10, 100).name('Font Size');
@@ -81,12 +81,12 @@
               const rotationX = this.x + (settings.rotationPoint * textWidth);
 
               ctx.save();
-              ctx.translate(rotationX, this.y);
+              ctx.translate(rotationX, settings.phraseHeight);
               ctx.rotate(this.rotation);
               ctx.fillStyle = settings.fontColor;
               ctx.globalAlpha = this.alpha;
               ctx.font = `${settings.fontSize}px serif`;
-              ctx.fillText("in total darkness", -textWidth * settings.rotationPoint, 0);
+              ctx.fillText("in total darkness", -textWidth * settings.rotationPoint, this.y - settings.phraseHeight);
               ctx.restore();
             }
     }
