@@ -30,7 +30,7 @@
       opacity: 0.75,
       alphaDecrement: 0.00005, // higher is faster fading
       rotationSpeed: 0.01, 
-      maxRotation: 180, 
+      maxRotation: Math.PI, 
       movementSpeed: 0.7, 
       fontColor: "#ffb6c1",
       emissionRate: 6, // lower is less frequent
@@ -43,12 +43,12 @@
     gui.add(settings, 'alphaDecrement', 0, 0.01).name('Fade');
     gui.add(settings, 'rotationSpeed', 0, 0.02).name('Rotation');
     gui.add(settings, 'movementSpeed', 0, 1).name('Velocity');
-    gui.add(settings, 'maxRotation', 0, 180).name('Max Rotation Angle');
+    gui.add(settings, 'maxRotation', 0, Math.PI).name('Max Rotation Angle');
     gui.addColor(settings, 'fontColor').name('Font Color');
     gui.add(settings, 'emissionRate', 1, 100).step(1).name('Emission Rate');
     gui.add(settings, 'fontSize', 10, 100).name('Font Size');
     gui.add(settings, 'phraseHeight', 0, canvas.height).name('Phrase Height');
-    gui.add(settings, 'rotationPoint', 0, 1).name('Rotation Point');
+    //gui.add(settings, 'rotationPoint', 0, 1).name('Rotation Point');
 
     class Particle {
       constructor(x, y, text, rotation) {
@@ -62,7 +62,9 @@
       }
 
       update() {
-        this.y -= settings.movementSpeed; 
+        if (this.y > settings.phraseHeight) {
+            this.y -= settings.movementSpeed; 
+        }
         this.alpha -= settings.alphaDecrement;
 
          
