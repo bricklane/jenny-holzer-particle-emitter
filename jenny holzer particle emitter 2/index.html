@@ -8,7 +8,7 @@
     body {
       margin: 0;
       overflow: hidden;
-      background-color: #f5f5dc; 
+      background-color: #f5f5dc;
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/dat.gui@0.7.6/build/dat.gui.min.js"></script>
@@ -27,16 +27,17 @@
 
     const gui = new dat.GUI();
     const settings = {
-      opacity: 0.75,
-      alphaDecrement: 0.00005, // higher is faster fading
-      rotationSpeed: 0.01, 
-      maxRotation: Math.PI, 
-      movementSpeed: 0.7, 
+      opacity: 0.5,
+      alphaDecrement: 0.0007,
+      rotationSpeed: 0.0052,
+      maxRotation: Math.PI,
+      movementSpeed: 0.59,
       fontColor: "#ffb6c1",
-      emissionRate: 6, // lower is less frequent
+      emissionRate: 2,
       fontSize: 30,
-      phraseHeight: 950, //canvas.height / 2 
-      rotationPoint: 1 // Rotation point (0: left, 1: right)
+      phraseHeight: 950,
+      rotationPoint: 1,
+      emissionVariance: 0.77
     };
 
     gui.add(settings, 'opacity', 0, 1).name('Opacity');
@@ -48,7 +49,7 @@
     gui.add(settings, 'emissionRate', 1, 100).step(1).name('Emission Rate');
     gui.add(settings, 'fontSize', 10, 100).name('Font Size');
     gui.add(settings, 'phraseHeight', 0, canvas.height).name('Phrase Height');
-    //gui.add(settings, 'rotationPoint', 0, 1).name('Rotation Point');
+    gui.add(settings, 'emissionVariance', 0, 1).name('Emission Variance');
 
     class Particle {
       constructor(x, y, text, rotation) {
@@ -59,15 +60,18 @@
         this.color = settings.fontColor;
         this.rotation = rotation;
         this.alpha = settings.opacity;
+        this.velocity = {
+          x: 0,
+          y: -settings.movementSpeed
+        };
       }
 
       update() {
         if (this.y > settings.phraseHeight) {
-            this.y -= settings.movementSpeed; 
+          this.y += this.velocity.y;
         }
         this.alpha -= settings.alphaDecrement;
 
-         
         if (this.y < settings.phraseHeight && this.rotation < settings.maxRotation) {
           this.rotation += settings.rotationSpeed;
           if (this.rotation > settings.maxRotation) {
@@ -77,20 +81,18 @@
       }
 
       draw() {
-              ctx.font = `${settings.fontSize}px serif`;
+        ctx.font = `${settings.fontSize}px serif`;
+        const textWidth = ctx.measureText("in total darkness").width + 10;
+        const rotationX = this.x + (settings.rotationPoint * textWidth);
 
-              const textWidth = ctx.measureText("in total darkness").width + 10;
-              const rotationX = this.x + (settings.rotationPoint * textWidth);
-
-              ctx.save();
-              ctx.translate(rotationX, settings.phraseHeight);
-              ctx.rotate(this.rotation);
-              ctx.fillStyle = settings.fontColor;
-              ctx.globalAlpha = this.alpha;
-              ctx.font = `${settings.fontSize}px serif`;
-              ctx.fillText("in total darkness", -textWidth * settings.rotationPoint, this.y - settings.phraseHeight);
-              ctx.restore();
-            }
+        ctx.save();
+        ctx.translate(rotationX, settings.phraseHeight);
+        ctx.rotate(this.rotation);
+        ctx.fillStyle = settings.fontColor;
+        ctx.globalAlpha = this.alpha;
+        ctx.fillText("in total darkness", -textWidth * settings.rotationPoint, this.y - settings.phraseHeight);
+        ctx.restore();
+      }
     }
 
     class ParticleEmitter {
@@ -124,12 +126,18 @@
 
     const particleEmitter = new ParticleEmitter();
 
+    let lastEmission = 0;
+
     function animate() {
       requestAnimationFrame(animate);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      if (frameCount % Math.floor(60 / settings.emissionRate) === 0) {
+      let emissionInterval = Math.floor(60 / settings.emissionRate);
+      let variance = (Math.random() * 2 - 1) * settings.emissionVariance * emissionInterval;
+
+      if (frameCount - lastEmission >= emissionInterval + variance) {
         particleEmitter.createParticle();
+        lastEmission = frameCount;
       }
 
       particleEmitter.update();
@@ -143,3 +151,4 @@
   </script>
 </body>
 </html>
+
