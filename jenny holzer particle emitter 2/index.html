@@ -36,6 +36,7 @@
       emissionRate: 6, 
       fontSize: 30,
       phraseHeight: 950, //canvas.height / 2 
+      rotationPoint: 0 // Rotation point (0: left, 1: right)
     };
 
     gui.add(settings, 'opacity', 0, 1).name('Opacity');
@@ -47,6 +48,7 @@
     gui.add(settings, 'emissionRate', 1, 100).step(1).name('Emission Rate');
     gui.add(settings, 'fontSize', 10, 100).name('Font Size');
     gui.add(settings, 'phraseHeight', 0, canvas.height).name('Phrase Height');
+    gui.add(settings, 'rotationPoint', 0, 1).name('Rotation Point');
 
     class Particle {
       constructor(x, y, text, rotation) {
@@ -73,17 +75,20 @@
       }
 
       draw() {
-        const textWidth = ctx.measureText("in total darkness").width;
+              ctx.font = `${settings.fontSize}px serif`;
 
-        ctx.save();
-        ctx.translate(this.x + textWidth / 2, this.y);
-        ctx.rotate(this.rotation);
-        ctx.fillStyle = settings.fontColor;
-        ctx.globalAlpha = this.alpha;
-        ctx.font = `${settings.fontSize}px serif`;
-        ctx.fillText("in total darkness", -textWidth / 2, 0);
-        ctx.restore();
-      }
+              const textWidth = ctx.measureText("in total darkness").width;
+              const rotationX = this.x + (settings.rotationPoint * textWidth);
+
+              ctx.save();
+              ctx.translate(rotationX, this.y);
+              ctx.rotate(this.rotation);
+              ctx.fillStyle = settings.fontColor;
+              ctx.globalAlpha = this.alpha;
+              ctx.font = `${settings.fontSize}px serif`;
+              ctx.fillText("in total darkness", -textWidth * settings.rotationPoint, 0);
+              ctx.restore();
+            }
     }
 
     class ParticleEmitter {
