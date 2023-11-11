@@ -3,69 +3,85 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="twitter:image" content="preview.png">
   <title>jenny holzer particle emitter</title>
   <style>
     body {
       margin: 0;
       overflow: hidden;
-      background-color: #f5f5dc; /* Light beige background */
+      background-color: #f5f5dc; 
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/dat.gui@0.7.6/build/dat.gui.min.js"></script>
   <script src="perlin.js"></script>
 </head>
 <body>
   <canvas id="particleCanvas"></canvas>
+
   <script>
     noise.seed(Math.random());
 
     const canvas = document.getElementById('particleCanvas');
     const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-    // Fixed settings
+    const gui = new dat.GUI();
     const settings = {
-      opacity: 0.55,
-      alphaDecrementBase: 0.0005,
+      opacity: 0.75,
+      alphaDecrement: 0.00005, 
+      rotationSpeed: 0.01, 
+      maxRotation: Math.PI, 
+      movementSpeed: 0.7, 
       fontColor: "#ffb6c1",
-      emissionRate: 4,
-      fontSize: 20,
-      sentenceChoice: "it is in your self-interest to find a way to be very tender"
+      emissionRate: 6, 
+      fontSize: 30,
+      phraseHeight: 950, //canvas.height / 2 
     };
 
-    const words = settings.sentenceChoice.split(' ');
+    gui.add(settings, 'opacity', 0, 1).name('Opacity');
+    gui.add(settings, 'alphaDecrement', 0, 0.01).name('Fade');
+    gui.add(settings, 'rotationSpeed', 0, 0.02).name('Rotation');
+    gui.add(settings, 'movementSpeed', 0, 1).name('Velocity');
+    gui.add(settings, 'maxRotation', 0, Math.PI).name('Max Rotation Angle');
+    gui.addColor(settings, 'fontColor').name('Font Color');
+    gui.add(settings, 'emissionRate', 1, 100).step(1).name('Emission Rate');
+    gui.add(settings, 'fontSize', 10, 100).name('Font Size');
+    gui.add(settings, 'phraseHeight', 0, canvas.height).name('Phrase Height');
 
     class Particle {
-      constructor(x, y, text, alphaDecrement) {
+      constructor(x, y, text, rotation) {
         this.x = x;
         this.y = y;
         this.text = text;
-        this.alpha = 1.0; // Start fully visible
-        this.alphaDecrement = alphaDecrement;
-        this.velocity = {
-          x: 0,
-          y: -Math.random() * 1 // Varied upward movement
-        };
-        this.rotation = 0; // Initialize rotation
-        this.rotationSpeed = 0.01; // Constant rotation speed
+        this.size = settings.fontSize;
+        this.color = settings.fontColor;
+        this.rotation = rotation;
+        this.alpha = settings.opacity;
       }
 
       update() {
-        this.alpha -= this.alphaDecrement;
-        this.y += this.velocity.y;
+        this.y -= settings.movementSpeed; 
+        this.alpha -= settings.alphaDecrement;
 
-        // Adjust rotation using Perlin noise
-        this.rotation += noise.perlin2(this.x * 0.005, this.y * 0.005) * 0.005;
-        // Small rotation
+         
+        if (this.y < settings.phraseHeight && this.rotation < settings.maxRotation) {
+          this.rotation += settings.rotationSpeed;
+          if (this.rotation > settings.maxRotation) {
+            this.rotation = settings.maxRotation;
+          }
+        }
       }
 
       draw() {
+        const textWidth = ctx.measureText("in total darkness").width;
+
         ctx.save();
-        ctx.translate(this.x, this.y);
-        ctx.rotate(this.rotation); // Apply rotation
+        ctx.translate(this.x + textWidth / 2, this.y);
+        ctx.rotate(this.rotation);
         ctx.fillStyle = settings.fontColor;
-        ctx.globalAlpha = this.alpha * settings.opacity;
+        ctx.globalAlpha = this.alpha;
         ctx.font = `${settings.fontSize}px serif`;
-        ctx.fillText(this.text, 0, 0);
+        ctx.fillText("in total darkness", -textWidth / 2, 0);
         ctx.restore();
       }
     }
@@ -75,39 +91,14 @@
         this.particles = [];
       }
 
-      clearParticles() {
-        this.particles = [];
-      }
-
       createParticle() {
-        let cumulativeWidth = 0;
-        let totalWidth = 0;
-
-        words.forEach((word, index) => {
-          ctx.font = `${settings.fontSize}px serif`;
-          totalWidth += ctx.measureText(word).width;
-          if (index < words.length - 1) {
-            totalWidth += settings.fontSize;
-          }
-        });
-
-        let startX = (canvas.width - totalWidth) / 2;
-
-        words.forEach((word, index) => {
-          const wordWidth = ctx.measureText(word).width;
-          const x = startX + cumulativeWidth;
-          cumulativeWidth += wordWidth + settings.fontSize;
-          const y = canvas.height;
-          const alphaDecrement = settings.alphaDecrementBase + index * 0.0005;
-          this.particles.push(new Particle(x, y, word, alphaDecrement));
-        });
+        let x = canvas.width / 2;
+        let y = canvas.height;
+        let rotation = 0;
+        this.particles.push(new Particle(x, y, "in total darkness", rotation));
       }
 
       update() {
-        if (this.particles.length === 0) {
-          return;
-        }
-
         for (let i = this.particles.length - 1; i >= 0; i--) {
           const particle = this.particles[i];
           particle.update();
@@ -124,32 +115,23 @@
       }
     }
 
-    const sentenceEmitter = new ParticleEmitter();
-
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      sentenceEmitter.clearParticles();
-      sentenceEmitter.createParticle();
-    }
-
-    // Call resizeCanvas initially and on every window resize
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
-    let frameCount = 0;
+    const particleEmitter = new ParticleEmitter();
 
     function animate() {
       requestAnimationFrame(animate);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (frameCount % settings.emissionRate === 0 && canvas.width !== 0) {
-        sentenceEmitter.createParticle();
+
+      if (frameCount % Math.floor(60 / settings.emissionRate) === 0) {
+        particleEmitter.createParticle();
       }
-      sentenceEmitter.update();
-      sentenceEmitter.draw();
+
+      particleEmitter.update();
+      particleEmitter.draw();
+
       frameCount++;
     }
 
+    let frameCount = 0;
     animate();
   </script>
 </body>
