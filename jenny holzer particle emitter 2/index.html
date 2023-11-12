@@ -37,7 +37,7 @@
       movementSpeed: 0.59,
       fontColor: "#ffb6c1",
       emissionRate: 2,
-      fontSize: 30,
+      fontSize: 20,
       //phraseHeight: 450,
       rotationPoint: 1,
       emissionVariance: 0.77
@@ -105,7 +105,7 @@
     }
 
     class ParticleEmitter {
-      constructor(xPosition, opacity, alphaDecrement, phraseHeight) {
+      constructor(xPosition, opacity, alphaDecrement, phraseHeight, text) {
         this.particles = [];
         this.opacity = opacity;
         this.xPosition = xPosition;
@@ -140,8 +140,11 @@
 
 /////////////////////////////////// Emmiter Settings /////////////////////////////
 
-    const particleEmitter1 = new ParticleEmitter(canvas.width / 4, 0.5, 0.0005, 450);
-    const particleEmitter2 = new ParticleEmitter(2 * canvas.width / 4, 0.8, 0.0007, 300);
+    const particleEmitter1 = new ParticleEmitter(2 * canvas.width / 9, 0.5, 0.001, 650);
+    const particleEmitter2 = new ParticleEmitter(3 * canvas.width / 9, 0.8, 0.0009, 500);
+    const particleEmitter3 = new ParticleEmitter(4 * canvas.width / 9, 0.8, 0.001, 600);
+    const particleEmitter4 = new ParticleEmitter(5 * canvas.width / 9, 0.5, 0.0005, 550);
+    const particleEmitter5 = new ParticleEmitter(6 * canvas.width / 9, 0.5, 0.001, 650);
 
     let lastEmission = 0;
 
@@ -161,6 +164,9 @@
       if (frameCount - lastEmission >= emissionInterval + variance) {
         particleEmitter1.createParticle();
         particleEmitter2.createParticle();
+        particleEmitter3.createParticle();
+        particleEmitter4.createParticle();
+        particleEmitter5.createParticle();
         lastEmission = frameCount;
       }
 
@@ -168,6 +174,12 @@
       particleEmitter1.draw();
       particleEmitter2.update();
       particleEmitter2.draw();
+      particleEmitter3.update();
+      particleEmitter3.draw();
+      particleEmitter4.update();
+      particleEmitter4.draw();
+      particleEmitter5.update();
+      particleEmitter5.draw();
 
       frameCount++;
     }
