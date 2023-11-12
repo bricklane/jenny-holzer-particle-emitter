@@ -32,7 +32,7 @@
     const settings = {
       //opacity: 0.5,
       //alphaDecrement: 0.0007,
-      rotationSpeed: 0.0052,
+      //rotationSpeed: 0.0052,
       maxRotation: Math.PI,
       movementSpeed: 0.59,
       fontColor: "#ffb6c1",
@@ -45,7 +45,7 @@
 
     //gui.add(settings, 'opacity', 0, 1).name('Opacity');
     //gui.add(settings, 'alphaDecrement', 0, 0.01).name('Fade');
-    gui.add(settings, 'rotationSpeed', 0, 0.02).name('Rotation');
+    //gui.add(settings, 'rotationSpeed', 0, 0.02).name('Rotation');
     gui.add(settings, 'movementSpeed', 0, 1).name('Velocity');
     gui.add(settings, 'maxRotation', 0, Math.PI).name('Max Rotation Angle');
     gui.addColor(settings, 'fontColor').name('Font Color');
@@ -59,7 +59,7 @@
 
 
     class Particle {
-      constructor(x, y, text, rotation, opacity, alphaDecrement, phraseHeight, rotationAlignment) {
+      constructor(x, y, text, rotation, opacity, alphaDecrement, phraseHeight, rotationAlignment, rotationSpeed) {
         this.x = x;
         this.y = y;
         this.text = text;
@@ -70,6 +70,7 @@
         this.alpha = opacity;
         this.phraseHeight = phraseHeight;
         this.rotationAlignment = rotationAlignment;
+        this.rotationSpeed = rotationSpeed;
         this.velocity = {
           x: 0,
           y: -settings.movementSpeed
@@ -83,7 +84,7 @@
         this.alpha -= this.alphaDecrement;
 
         if (this.y < this.phraseHeight && this.rotation < settings.maxRotation) {
-          this.rotation += settings.rotationSpeed;
+          this.rotation += this.rotationSpeed;
           if (this.rotation > settings.maxRotation) {
             this.rotation = settings.maxRotation;
           }
@@ -116,7 +117,7 @@
     }
 
     class ParticleEmitter {
-      constructor(xPosition, opacity, alphaDecrement, phraseHeight, text, rotationAlignment) {
+      constructor(xPosition, opacity, alphaDecrement, phraseHeight, text, rotationAlignment, rotationSpeed) {
         this.particles = [];
         this.opacity = opacity;
         this.xPosition = xPosition;
@@ -124,13 +125,14 @@
         this.alphaDecrement = alphaDecrement;
         this.phraseHeight = phraseHeight;
         this.rotationAlignment = rotationAlignment;
+        this.rotationSpeed = rotationSpeed;
       }
 
       createParticle() {
         let x = this.xPosition;
         let y = canvas.height;
         let rotation = 0;
-        this.particles.push(new Particle(x, y, this.text, rotation, this.opacity, this.alphaDecrement, this.phraseHeight, this.rotationAlignment));
+        this.particles.push(new Particle(x, y, this.text, rotation, this.opacity, this.alphaDecrement, this.phraseHeight, this.rotationAlignment, this.rotationSpeed));
       }
 
       update() {
@@ -156,11 +158,12 @@
                    //x position, opacity, alphadecrement, length, text//
 
 
-    const particleEmitter1 = new ParticleEmitter(2 * canvas.width / 9, 0.5, 0.001, 650, "in total darkness", 'right');
-    const particleEmitter2 = new ParticleEmitter(3 * canvas.width / 9, 0.8, 0.0009, 500, "in total darkness", 'right');
-    const particleEmitter3 = new ParticleEmitter(4 * canvas.width / 9, 0.8, 0.001, 600, "or in a very large room", 'right');
-    const particleEmitter4 = new ParticleEmitter(5 * canvas.width / 9, 0.5, 0.0005, 550, "very quietly", 'left');
-    const particleEmitter5 = new ParticleEmitter(6 * canvas.width / 9, 0.5, 0.001, 650, "very quietly", 'left');
+    const particleEmitter1 = new ParticleEmitter(2 * canvas.width / 10, 0.5, 0.001, 650, "in total darkness", 'right', 0.0052);
+    const particleEmitter2 = new ParticleEmitter(3 * canvas.width / 10, 0.8, 0.0009, 500, "in total darkness", 'right', 0.0052);
+    const particleEmitter3 = new ParticleEmitter(4 * canvas.width / 10, 0.8, 0.001, 600, "or in a very large room", 'right', 0.0052);
+    const particleEmitter4 = new ParticleEmitter(6 * canvas.width / 10, 0.8, 0.0009, 500, "or in a very large room", 'left', -0.0052);
+    const particleEmitter5 = new ParticleEmitter(7 * canvas.width / 10, 0.5, 0.0005, 550, "very quietly", 'left', -0.0052);
+    const particleEmitter6 = new ParticleEmitter(8 * canvas.width / 10, 0.5, 0.001, 650, "very quietly", 'left', -0.0052);
 
     let lastEmission = 0;
 
@@ -181,6 +184,7 @@
         particleEmitter3.createParticle();
         particleEmitter4.createParticle();
         particleEmitter5.createParticle();
+        particleEmitter6.createParticle();
         lastEmission = frameCount;
       }
 
@@ -194,6 +198,8 @@
       particleEmitter4.draw();
       particleEmitter5.update();
       particleEmitter5.draw();
+      particleEmitter6.update();
+      particleEmitter6.draw();
 
       frameCount++;
     }
