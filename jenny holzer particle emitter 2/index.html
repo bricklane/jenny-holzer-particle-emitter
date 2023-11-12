@@ -8,7 +8,7 @@
     body {
       margin: 0;
       overflow: hidden;
-      background-color: #f5f5dc;
+      background-color: #f5f5dc; 
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/dat.gui@0.7.6/build/dat.gui.min.js"></script>
@@ -27,17 +27,16 @@
 
     const gui = new dat.GUI();
     const settings = {
-      opacity: 0.5,
-      alphaDecrement: 0.0007,
-      rotationSpeed: 0.0052,
-      maxRotation: Math.PI,
-      movementSpeed: 0.59,
+      opacity: 0.58,
+      alphaDecrement: 0.0013, // higher is faster fading
+      rotationSpeed: 0.0075, 
+      maxRotation: Math.PI, 
+      movementSpeed: 0.77, 
       fontColor: "#ffb6c1",
-      emissionRate: 2,
+      emissionRate: 5, // lower is less frequent
       fontSize: 30,
-      phraseHeight: 950,
-      rotationPoint: 1,
-      emissionVariance: 0.77
+      length: 940,
+      rotationPoint: 1 // Rotation point (0: left, 1: right)
     };
 
     gui.add(settings, 'opacity', 0, 1).name('Opacity');
@@ -48,31 +47,36 @@
     gui.addColor(settings, 'fontColor').name('Font Color');
     gui.add(settings, 'emissionRate', 1, 100).step(1).name('Emission Rate');
     gui.add(settings, 'fontSize', 10, 100).name('Font Size');
-    gui.add(settings, 'phraseHeight', 0, canvas.height).name('Phrase Height');
-    gui.add(settings, 'emissionVariance', 0, 1).name('Emission Variance');
+    gui.add(settings, 'length', 0, canvas.height).name('Phrase Height');
+    //gui.add(settings, 'rotationPoint', 0, 1).name('Rotation Point');
 
     class Particle {
-      constructor(x, y, text, rotation) {
+      constructor(x, y, length, text, rotation, rotationDirection) {
         this.x = x;
         this.y = y;
         this.text = text;
+        this.length = 600;
+        this.rotationDirection = rotationDirection;
+
+
         this.size = settings.fontSize;
         this.color = settings.fontColor;
-        this.rotation = rotation;
+        this.rotation = rotation; //this is like rotation speed
         this.alpha = settings.opacity;
         this.velocity = {
           x: 0,
-          y: -settings.movementSpeed
-        };
+          y: -settings.movementSpeed //- Math.random() * 0.05 (made velocity random but it doesn't look good)
+        }; 
       }
 
       update() {
-        if (this.y > settings.phraseHeight) {
-          this.y += this.velocity.y;
+        if (this.y > settings.length) {
+            this.y += this.velocity.y; 
         }
         this.alpha -= settings.alphaDecrement;
 
-        if (this.y < settings.phraseHeight && this.rotation < settings.maxRotation) {
+         
+        if (this.y < settings.length && this.rotation < settings.maxRotation) {
           this.rotation += settings.rotationSpeed;
           if (this.rotation > settings.maxRotation) {
             this.rotation = settings.maxRotation;
@@ -81,30 +85,36 @@
       }
 
       draw() {
-        ctx.font = `${settings.fontSize}px serif`;
-        const textWidth = ctx.measureText("in total darkness").width + 10;
-        const rotationX = this.x + (settings.rotationPoint * textWidth);
+              ctx.font = `${settings.fontSize}px serif`;
 
-        ctx.save();
-        ctx.translate(rotationX, settings.phraseHeight);
-        ctx.rotate(this.rotation);
-        ctx.fillStyle = settings.fontColor;
-        ctx.globalAlpha = this.alpha;
-        ctx.fillText("in total darkness", -textWidth * settings.rotationPoint, this.y - settings.phraseHeight);
-        ctx.restore();
-      }
+              const textWidth = ctx.measureText(this.text).width + 10;
+              const rotationX = this.x + (settings.rotationPoint * textWidth);
+
+              ctx.save();
+              ctx.translate(rotationX, settings.length);
+              ctx.rotate(this.rotation);
+              ctx.fillStyle = settings.fontColor;
+              ctx.globalAlpha = this.alpha;
+              ctx.font = `${settings.fontSize}px serif`;
+              ctx.fillText(this.text, -textWidth * settings.rotationPoint, this.y - settings.length);
+              ctx.restore();
+            }
     }
 
     class ParticleEmitter {
-      constructor() {
+       constructor(x, y, length, text, rotationDirection) {
+        this.x = x;
+        this.y = y;
+        this.length = length;
+        this.text = text;
+        this.rotationDirection = rotationDirection;
         this.particles = [];
       }
 
       createParticle() {
-        let x = canvas.width / 2;
         let y = canvas.height;
         let rotation = 0;
-        this.particles.push(new Particle(x, y, "in total darkness", rotation));
+        this.particles.push(new Particle(this.x, this.y, this.length, this.text, rotation, this.rotationdirection));
       }
 
       update() {
@@ -124,24 +134,22 @@
       }
     }
 
-    const particleEmitter = new ParticleEmitter();
-
-    let lastEmission = 0;
+      const particleEmitter1 = new ParticleEmitter(20, canvas.height, 550, "in total darkness", 1);
+      const particleEmitter2 = new ParticleEmitter(500, canvas.height, 950, "another text", -1);
 
     function animate() {
       requestAnimationFrame(animate);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      let emissionInterval = Math.floor(60 / settings.emissionRate);
-      let variance = (Math.random() * 2 - 1) * settings.emissionVariance * emissionInterval;
-
-      if (frameCount - lastEmission >= emissionInterval + variance) {
-        particleEmitter.createParticle();
-        lastEmission = frameCount;
+      if (frameCount % Math.floor(60 / settings.emissionRate) === 0) {
+        particleEmitter1.createParticle();
+        particleEmitter2.createParticle();
       }
 
-      particleEmitter.update();
-      particleEmitter.draw();
+      particleEmitter1.update();
+      particleEmitter1.draw();
+      particleEmitter2.update();
+      particleEmitter2.draw();
 
       frameCount++;
     }
@@ -151,4 +159,3 @@
   </script>
 </body>
 </html>
-
