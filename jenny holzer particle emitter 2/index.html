@@ -91,7 +91,7 @@
 
       draw() {
         ctx.font = `${settings.fontSize}px serif`;
-        const textWidth = ctx.measureText("in total darkness").width + 10;
+        const textWidth = ctx.measureText(this.text).width + 10;
         const rotationX = this.x + (settings.rotationPoint * textWidth);
 
         ctx.save();
@@ -99,7 +99,7 @@
         ctx.rotate(this.rotation);
         ctx.fillStyle = settings.fontColor;
         ctx.globalAlpha = this.alpha;
-        ctx.fillText("in total darkness", -textWidth * settings.rotationPoint, this.y - this.phraseHeight);
+        ctx.fillText(this.text, -textWidth * settings.rotationPoint, this.y - this.phraseHeight);
         ctx.restore();
       }
     }
@@ -109,6 +109,7 @@
         this.particles = [];
         this.opacity = opacity;
         this.xPosition = xPosition;
+        this.text = text;
         this.alphaDecrement = alphaDecrement;
         this.phraseHeight = phraseHeight;
       }
@@ -117,7 +118,7 @@
         let x = this.xPosition;
         let y = canvas.height;
         let rotation = 0;
-        this.particles.push(new Particle(x, y, "in total darkness", rotation, this.opacity, this.alphaDecrement, this.phraseHeight));
+        this.particles.push(new Particle(x, y, this.text, rotation, this.opacity, this.alphaDecrement, this.phraseHeight));
       }
 
       update() {
@@ -140,15 +141,16 @@
 
 /////////////////////////////////// Emmiter Settings /////////////////////////////
 
-    const particleEmitter1 = new ParticleEmitter(2 * canvas.width / 9, 0.5, 0.001, 650);
-    const particleEmitter2 = new ParticleEmitter(3 * canvas.width / 9, 0.8, 0.0009, 500);
-    const particleEmitter3 = new ParticleEmitter(4 * canvas.width / 9, 0.8, 0.001, 600);
-    const particleEmitter4 = new ParticleEmitter(5 * canvas.width / 9, 0.5, 0.0005, 550);
-    const particleEmitter5 = new ParticleEmitter(6 * canvas.width / 9, 0.5, 0.001, 650);
+                   //x position, opacity, alphadecrement, length, text//
+
+    
+    const particleEmitter1 = new ParticleEmitter(2 * canvas.width / 9, 0.5, 0.001, 650, "in total darkness");
+    const particleEmitter2 = new ParticleEmitter(3 * canvas.width / 9, 0.8, 0.0009, 500, "in total darkness");
+    const particleEmitter3 = new ParticleEmitter(4 * canvas.width / 9, 0.8, 0.001, 600, "or in a very large room");
+    const particleEmitter4 = new ParticleEmitter(5 * canvas.width / 9, 0.5, 0.0005, 550, "very quietly");
+    const particleEmitter5 = new ParticleEmitter(6 * canvas.width / 9, 0.5, 0.001, 650, "very quietly");
 
     let lastEmission = 0;
-
-
 
 
 
