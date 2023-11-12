@@ -31,7 +31,7 @@
     const gui = new dat.GUI();
     const settings = {
       //opacity: 0.5,
-      alphaDecrement: 0.0007,
+      //alphaDecrement: 0.0007,
       rotationSpeed: 0.0052,
       maxRotation: Math.PI,
       movementSpeed: 0.59,
@@ -44,7 +44,7 @@
     };
 
     //gui.add(settings, 'opacity', 0, 1).name('Opacity');
-    gui.add(settings, 'alphaDecrement', 0, 0.01).name('Fade');
+    //gui.add(settings, 'alphaDecrement', 0, 0.01).name('Fade');
     gui.add(settings, 'rotationSpeed', 0, 0.02).name('Rotation');
     gui.add(settings, 'movementSpeed', 0, 1).name('Velocity');
     gui.add(settings, 'maxRotation', 0, Math.PI).name('Max Rotation Angle');
@@ -59,13 +59,14 @@
 
 
     class Particle {
-      constructor(x, y, text, rotation, opacity) {
+      constructor(x, y, text, rotation, opacity, alphaDecrement) {
         this.x = x;
         this.y = y;
         this.text = text;
         this.size = settings.fontSize;
         this.color = settings.fontColor;
         this.rotation = rotation;
+        this.alphaDecrement = alphaDecrement;
         this.alpha = opacity;
         this.velocity = {
           x: 0,
@@ -77,7 +78,7 @@
         if (this.y > settings.phraseHeight) {
           this.y += this.velocity.y;
         }
-        this.alpha -= settings.alphaDecrement;
+        this.alpha -= this.alphaDecrement;
 
         if (this.y < settings.phraseHeight && this.rotation < settings.maxRotation) {
           this.rotation += settings.rotationSpeed;
@@ -103,17 +104,18 @@
     }
 
     class ParticleEmitter {
-      constructor(xPosition, opacity) {
+      constructor(xPosition, opacity, alphaDecrement) {
         this.particles = [];
         this.opacity = opacity;
         this.xPosition = xPosition;
+        this.alphaDecrement = alphaDecrement;
       }
 
       createParticle() {
         let x = this.xPosition;
         let y = canvas.height;
         let rotation = 0;
-        this.particles.push(new Particle(x, y, "in total darkness", rotation, this.opacity));
+        this.particles.push(new Particle(x, y, "in total darkness", rotation, this.opacity, this.alphaDecrement));
       }
 
       update() {
@@ -136,8 +138,8 @@
 
 /////////////////////////////////// Emmiter Settings /////////////////////////////
 
-    const particleEmitter1 = new ParticleEmitter(canvas.width / 4, 0.5);
-    const particleEmitter2 = new ParticleEmitter(3 * canvas.width / 4, 0.8);
+    const particleEmitter1 = new ParticleEmitter(canvas.width / 4, 0.5, 0.0007);
+    const particleEmitter2 = new ParticleEmitter(3 * canvas.width / 4, 0.8, 0.0005);
 
     let lastEmission = 0;
 
