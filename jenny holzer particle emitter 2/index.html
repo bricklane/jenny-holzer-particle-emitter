@@ -47,7 +47,7 @@
     gui.addColor(settings, 'fontColor').name('Font Color');
     gui.add(settings, 'emissionRate', 1, 100).step(1).name('Emission Rate');
     gui.add(settings, 'fontSize', 10, 100).name('Font Size');
-    gui.add(settings, 'length', 0, canvas.height).name('Phrase Height');
+    //gui.add(settings, 'length', 0, canvas.height).name('Phrase Height');
     //gui.add(settings, 'rotationPoint', 0, 1).name('Rotation Point');
 
     class Particle {
@@ -55,7 +55,7 @@
         this.x = x;
         this.y = y;
         this.text = text;
-        this.length = 600;
+        this.length = length;
         this.rotationDirection = rotationDirection;
 
 
@@ -70,7 +70,7 @@
       }
 
       update() {
-        if (this.y > settings.length) {
+        if (this.y > this.length) {
             this.y += this.velocity.y; 
         }
         this.alpha -= settings.alphaDecrement;
@@ -91,7 +91,7 @@
               const rotationX = this.x + (settings.rotationPoint * textWidth);
 
               ctx.save();
-              ctx.translate(rotationX, settings.length);
+              ctx.translate(rotationX, this.length);
               ctx.rotate(this.rotation);
               ctx.fillStyle = settings.fontColor;
               ctx.globalAlpha = this.alpha;
@@ -134,8 +134,8 @@
       }
     }
 
-      const particleEmitter1 = new ParticleEmitter(20, canvas.height, 550, "in total darkness", 1);
-      const particleEmitter2 = new ParticleEmitter(500, canvas.height, 950, "another text", -1);
+      const particleEmitter1 = new ParticleEmitter(20, canvas.height, 600, "in total darkness", 1);
+      const particleEmitter2 = new ParticleEmitter(500, canvas.height, 940, "another text", -1);
 
     function animate() {
       requestAnimationFrame(animate);
