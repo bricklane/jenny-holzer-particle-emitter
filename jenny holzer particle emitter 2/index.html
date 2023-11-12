@@ -32,7 +32,7 @@
     const settings = {
       //opacity: 0.5,
       //alphaDecrement: 0.0007,
-      rotationSpeed: -0.0052,
+      rotationSpeed: 0.0052,
       maxRotation: Math.PI,
       movementSpeed: 0.59,
       fontColor: "#ffb6c1",
@@ -59,7 +59,7 @@
 
 
     class Particle {
-      constructor(x, y, text, rotation, opacity, alphaDecrement, phraseHeight) {
+      constructor(x, y, text, rotation, opacity, alphaDecrement, phraseHeight, rotationAlignment) {
         this.x = x;
         this.y = y;
         this.text = text;
@@ -69,6 +69,7 @@
         this.alphaDecrement = alphaDecrement;
         this.alpha = opacity;
         this.phraseHeight = phraseHeight;
+        this.rotationAlignment = rotationAlignment;
         this.velocity = {
           x: 0,
           y: -settings.movementSpeed
@@ -92,33 +93,44 @@
       draw() {
         ctx.font = `${settings.fontSize}px serif`;
         const textWidth = ctx.measureText(this.text).width + 10;
-        const rotationX = this.x// + (settings.rotationPoint * textWidth);
+        let rotationX;
+        let textOffsetX;
+            if (this.rotationAlignment === 'right') {
+                rotationX = this.x + (settings.rotationPoint * textWidth);
+                textOffsetX = -textWidth * settings.rotationPoint; // Offset for right alignment
+            } else { // Default to left if not right
+                rotationX = this.x;
+                textOffsetX = 0; // No offset for left alignment
+            }
+
+        //const rotationX = this.x// + (settings.rotationPoint * textWidth);
 
         ctx.save();
         ctx.translate(rotationX, this.phraseHeight);
         ctx.rotate(this.rotation);
         ctx.fillStyle = settings.fontColor;
         ctx.globalAlpha = this.alpha;
-        ctx.fillText(this.text, 0/*-textWidth * settings.rotationPoint*/, this.y - this.phraseHeight);
+        ctx.fillText(this.text, textOffsetX, this.y - this.phraseHeight);
         ctx.restore();
       }
     }
 
     class ParticleEmitter {
-      constructor(xPosition, opacity, alphaDecrement, phraseHeight, text) {
+      constructor(xPosition, opacity, alphaDecrement, phraseHeight, text, rotationAlignment) {
         this.particles = [];
         this.opacity = opacity;
         this.xPosition = xPosition;
         this.text = text;
         this.alphaDecrement = alphaDecrement;
         this.phraseHeight = phraseHeight;
+        this.rotationAlignment = rotationAlignment;
       }
 
       createParticle() {
         let x = this.xPosition;
         let y = canvas.height;
         let rotation = 0;
-        this.particles.push(new Particle(x, y, this.text, rotation, this.opacity, this.alphaDecrement, this.phraseHeight));
+        this.particles.push(new Particle(x, y, this.text, rotation, this.opacity, this.alphaDecrement, this.phraseHeight, this.rotationAlignment));
       }
 
       update() {
@@ -144,11 +156,11 @@
                    //x position, opacity, alphadecrement, length, text//
 
 
-    const particleEmitter1 = new ParticleEmitter(2 * canvas.width / 9, 0.5, 0.001, 650, "in total darkness");
-    const particleEmitter2 = new ParticleEmitter(3 * canvas.width / 9, 0.8, 0.0009, 500, "in total darkness");
-    const particleEmitter3 = new ParticleEmitter(4 * canvas.width / 9, 0.8, 0.001, 600, "or in a very large room");
-    const particleEmitter4 = new ParticleEmitter(5 * canvas.width / 9, 0.5, 0.0005, 550, "very quietly");
-    const particleEmitter5 = new ParticleEmitter(6 * canvas.width / 9, 0.5, 0.001, 650, "very quietly");
+    const particleEmitter1 = new ParticleEmitter(2 * canvas.width / 9, 0.5, 0.001, 650, "in total darkness", 'right');
+    const particleEmitter2 = new ParticleEmitter(3 * canvas.width / 9, 0.8, 0.0009, 500, "in total darkness", 'right');
+    const particleEmitter3 = new ParticleEmitter(4 * canvas.width / 9, 0.8, 0.001, 600, "or in a very large room", 'right');
+    const particleEmitter4 = new ParticleEmitter(5 * canvas.width / 9, 0.5, 0.0005, 550, "very quietly", 'left');
+    const particleEmitter5 = new ParticleEmitter(6 * canvas.width / 9, 0.5, 0.001, 650, "very quietly", 'left');
 
     let lastEmission = 0;
 
