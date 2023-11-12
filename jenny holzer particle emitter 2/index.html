@@ -51,12 +51,13 @@
     //gui.add(settings, 'rotationPoint', 0, 1).name('Rotation Point');
 
     class Particle {
-      constructor(x, y, length, text, rotation, rotationDirection) {
+      constructor(x, y, length, text, rotation, rotationDirection, alphaDecrement) {
         this.x = x;
         this.y = y;
         this.text = text;
         this.length = length;
         this.rotationDirection = rotationDirection;
+        this.alphaDecrement = alphaDecrement;
 
 
         this.size = settings.fontSize;
@@ -73,10 +74,10 @@
         if (this.y > this.length) {
             this.y += this.velocity.y; 
         }
-        this.alpha -= settings.alphaDecrement;
+        this.alpha -= this.alphaDecrement;
 
          
-        if (this.y < settings.length && this.rotation < settings.maxRotation) {
+        if (this.y < this.length && this.rotation < settings.maxRotation) {
           this.rotation += settings.rotationSpeed;
           if (this.rotation > settings.maxRotation) {
             this.rotation = settings.maxRotation;
@@ -91,22 +92,22 @@
               const rotationX = this.x + (settings.rotationPoint * textWidth);
 
               ctx.save();
-              ctx.translate(rotationX, this.length);
+              ctx.translate(rotationX, this.y);
               ctx.rotate(this.rotation);
               ctx.fillStyle = settings.fontColor;
               ctx.globalAlpha = this.alpha;
-              ctx.font = `${settings.fontSize}px serif`;
-              ctx.fillText(this.text, -textWidth * settings.rotationPoint, this.y - settings.length);
+              ctx.fillText(this.text, -textWidth * settings.rotationPoint, this.y - this.length);
               ctx.restore();
             }
     }
 
     class ParticleEmitter {
-       constructor(x, y, length, text, rotationDirection) {
+       constructor(x, y, length, text, rotationDirection, alphaDecrement) {
         this.x = x;
         this.y = y;
         this.length = length;
         this.text = text;
+        this.alphaDecrement = alphaDecrement;
         this.rotationDirection = rotationDirection;
         this.particles = [];
       }
@@ -134,22 +135,29 @@
       }
     }
 
-      const particleEmitter1 = new ParticleEmitter(20, canvas.height, 600, "in total darkness", 1);
-      const particleEmitter2 = new ParticleEmitter(500, canvas.height, 940, "another text", -1);
+
+      const particleEmitter1 = new ParticleEmitter(300, canvas.height, 700, "in total darkness", -1, 0.00001);
+      const particleEmitter2 = new ParticleEmitter(500, canvas.height, 940, "or in a very dark room", -1, 0.005);
+      const particleEmitter3 = new ParticleEmitter(800, canvas.height, 940, "very quietly", -1, 0.005);
+
 
     function animate() {
       requestAnimationFrame(animate);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (frameCount % Math.floor(60 / settings.emissionRate) === 0) {
+  
         particleEmitter1.createParticle();
         particleEmitter2.createParticle();
+        particleEmitter3.createParticle();
       }
 
       particleEmitter1.update();
       particleEmitter1.draw();
       particleEmitter2.update();
       particleEmitter2.draw();
+      particleEmitter3.update();
+      particleEmitter3.draw();
 
       frameCount++;
     }
