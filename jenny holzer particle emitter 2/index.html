@@ -32,7 +32,7 @@
     const settings = {
       //opacity: 0.5,
       //alphaDecrement: 0.0007,
-      rotationSpeed: 0.0052,
+      rotationSpeed: -0.0052,
       maxRotation: Math.PI,
       movementSpeed: 0.59,
       fontColor: "#ffb6c1",
@@ -92,14 +92,14 @@
       draw() {
         ctx.font = `${settings.fontSize}px serif`;
         const textWidth = ctx.measureText(this.text).width + 10;
-        const rotationX = this.x + (settings.rotationPoint * textWidth);
+        const rotationX = this.x// + (settings.rotationPoint * textWidth);
 
         ctx.save();
         ctx.translate(rotationX, this.phraseHeight);
         ctx.rotate(this.rotation);
         ctx.fillStyle = settings.fontColor;
         ctx.globalAlpha = this.alpha;
-        ctx.fillText(this.text, -textWidth * settings.rotationPoint, this.y - this.phraseHeight);
+        ctx.fillText(this.text, 0/*-textWidth * settings.rotationPoint*/, this.y - this.phraseHeight);
         ctx.restore();
       }
     }
@@ -143,7 +143,7 @@
 
                    //x position, opacity, alphadecrement, length, text//
 
-    
+
     const particleEmitter1 = new ParticleEmitter(2 * canvas.width / 9, 0.5, 0.001, 650, "in total darkness");
     const particleEmitter2 = new ParticleEmitter(3 * canvas.width / 9, 0.8, 0.0009, 500, "in total darkness");
     const particleEmitter3 = new ParticleEmitter(4 * canvas.width / 9, 0.8, 0.001, 600, "or in a very large room");
