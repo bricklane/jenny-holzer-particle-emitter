@@ -25,6 +25,10 @@
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
+
+////////////////// GUI Settings //////////////////////////
+
+
     const gui = new dat.GUI();
     const settings = {
       opacity: 0.58,
@@ -41,7 +45,7 @@
 
     gui.add(settings, 'opacity', 0, 1).name('Opacity');
     gui.add(settings, 'alphaDecrement', 0, 0.01).name('Fade');
-    gui.add(settings, 'rotationSpeed', 0, 0.02).name('Rotation');
+    gui.add(settings, 'rotationSpeed', 0, 0.02).name('Rotationspeed');
     gui.add(settings, 'movementSpeed', 0, 1).name('Velocity');
     gui.add(settings, 'maxRotation', 0, Math.PI).name('Max Rotation Angle');
     gui.addColor(settings, 'fontColor').name('Font Color');
@@ -50,24 +54,29 @@
     //gui.add(settings, 'length', 0, canvas.height).name('Phrase Height');
     //gui.add(settings, 'rotationPoint', 0, 1).name('Rotation Point');
 
+
+
+
+////////////////// Particle class ///////////////////////
+
+
     class Particle {
-      constructor(x, y, length, text, rotation, rotationDirection, alphaDecrement) {
+      constructor(x, y, length, text, rotationDirection, alphaDecrement, opacity, rotation) {
         this.x = x;
         this.y = y;
-        this.text = text;
         this.length = length;
+        this.text = text;
         this.rotationDirection = rotationDirection;
         this.alphaDecrement = alphaDecrement;
-
-
-        this.size = settings.fontSize;
-        this.color = settings.fontColor;
-        this.rotation = rotation; //this is like rotation speed
-        this.alpha = settings.opacity;
+        this.alpha = this.opacity;
+        this.rotation = rotation; 
         this.velocity = {
           x: 0,
           y: -settings.movementSpeed //- Math.random() * 0.05 (made velocity random but it doesn't look good)
         }; 
+
+        this.size = settings.fontSize;
+        this.color = settings.fontColor;
       }
 
       update() {
@@ -101,21 +110,28 @@
             }
     }
 
+
+
+
+/////////////////// Particle Emmitter Class  ///////////////////
+
+
     class ParticleEmitter {
-       constructor(x, y, length, text, rotationDirection, alphaDecrement) {
+       constructor(x, y, length, text, rotationDirection, alphaDecrement, rotation) {
         this.x = x;
         this.y = y;
         this.length = length;
         this.text = text;
         this.alphaDecrement = alphaDecrement;
         this.rotationDirection = rotationDirection;
+        this.rotation = rotation;
         this.particles = [];
       }
 
       createParticle() {
         let y = canvas.height;
         let rotation = 0;
-        this.particles.push(new Particle(this.x, this.y, this.length, this.text, rotation, this.rotationdirection));
+        this.particles.push(new Particle(this.x, this.y, this.length, this.text, this.rotation, this.rotationdirection));
       }
 
       update() {
@@ -136,10 +152,17 @@
     }
 
 
-      const particleEmitter1 = new ParticleEmitter(300, canvas.height, 700, "in total darkness", -1, 0.00001);
-      const particleEmitter2 = new ParticleEmitter(500, canvas.height, 940, "or in a very dark room", -1, 0.005);
-      const particleEmitter3 = new ParticleEmitter(800, canvas.height, 940, "very quietly", -1, 0.005);
+/////////////////////////// Particle Emitter Actualization //////////////////////////////
 
+      const particleEmitter1 = new ParticleEmitter(150, canvas.height, 850, "in total darkness", -1, 0.00001, 0.0075);
+      const particleEmitter2 = new ParticleEmitter(300, canvas.height, 700, "in total darkness", -1, 0.00001, 0.0075);
+      const particleEmitter3 = new ParticleEmitter(500, canvas.height, 940, "or in a very dark room", -1, 0.005, 0.0075);
+      const particleEmitter4 = new ParticleEmitter(800, canvas.height, 940, "very quietly", -1, 0.0);
+
+
+
+
+////////////////////// Animate ////////////////////////
 
     function animate() {
       requestAnimationFrame(animate);
@@ -150,6 +173,7 @@
         particleEmitter1.createParticle();
         particleEmitter2.createParticle();
         particleEmitter3.createParticle();
+        particleEmitter4.createParticle();
       }
 
       particleEmitter1.update();
@@ -158,6 +182,8 @@
       particleEmitter2.draw();
       particleEmitter3.update();
       particleEmitter3.draw();
+      particleEmitter4.update();
+      particleEmitter4.draw();
 
       frameCount++;
     }
