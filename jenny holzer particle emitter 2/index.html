@@ -26,36 +26,36 @@
     canvas.height = window.innerHeight;
 
 
-//////////////////////////// GUI /////////////////////////////
+
+
+    //////////////////////////// GUI /////////////////////////////
+
+
+
 
     const gui = new dat.GUI();
     const settings = {
-      //opacity: 0.5,
-      //alphaDecrement: 0.0007,
-      //rotationSpeed: 0.0052,
       maxRotation: Math.PI,
-      movementSpeed: 0.59,
+      movementSpeed: 0.9,
       fontColor: "#ffb6c1",
-      emissionRate: 2,
       fontSize: 20,
-      //phraseHeight: 450,
       rotationPoint: 1,
-      emissionVariance: 0.77
+      backgroundColor: '#f5f6dc'
     };
 
-    //gui.add(settings, 'opacity', 0, 1).name('Opacity');
-    //gui.add(settings, 'alphaDecrement', 0, 0.01).name('Fade');
-    //gui.add(settings, 'rotationSpeed', 0, 0.02).name('Rotation');
-    gui.add(settings, 'movementSpeed', 0, 1).name('Velocity');
-    gui.add(settings, 'maxRotation', 0, Math.PI).name('Max Rotation Angle');
+    //gui.add(settings, 'movementSpeed', 0, 1).name('Velocity');
+    //gui.add(settings, 'maxRotation', 0, Math.PI).name('Max Rotation Angle');
     gui.addColor(settings, 'fontColor').name('Font Color');
-    gui.add(settings, 'emissionRate', 1, 100).step(1).name('Emission Rate');
-    gui.add(settings, 'fontSize', 10, 100).name('Font Size');
-    //gui.add(settings, 'phraseHeight', 0, canvas.height).name('Phrase Height');
-    gui.add(settings, 'emissionVariance', 0, 1).name('Emission Variance');
+    //gui.add(settings, 'fontSize', 10, 100).name('Font Size');
+    gui.addColor(settings, 'backgroundColor').name('Background Color').onChange(function(newColor) {
+            canvas.style.backgroundColor = newColor;});
 
 
-///////////////////////// Classes //////////////////////////
+
+
+    ////////////////////////// Classes //////////////////////////
+
+
 
 
     class Particle {
@@ -96,15 +96,13 @@
         const textWidth = ctx.measureText(this.text).width + 10;
         let rotationX;
         let textOffsetX;
-            if (this.rotationAlignment === 'right') {
-                rotationX = this.x + (settings.rotationPoint * textWidth);
-                textOffsetX = -textWidth * settings.rotationPoint; // Offset for right alignment
-            } else { // Default to left if not right
-                rotationX = this.x;
-                textOffsetX = 0; // No offset for left alignment
-            }
-
-        //const rotationX = this.x// + (settings.rotationPoint * textWidth);
+        if (this.rotationAlignment === 'right') {
+            rotationX = this.x + (settings.rotationPoint * textWidth);
+            textOffsetX = -textWidth * settings.rotationPoint;
+        } else {
+            rotationX = this.x;
+            textOffsetX = 0;
+        }
 
         ctx.save();
         ctx.translate(rotationX, this.phraseHeight);
@@ -116,8 +114,10 @@
       }
     }
 
+
+
     class ParticleEmitter {
-      constructor(xPosition, opacity, alphaDecrement, phraseHeight, text, rotationAlignment, rotationSpeed) {
+      constructor(xPosition, opacity, alphaDecrement, phraseHeight, text, rotationAlignment, rotationSpeed, emissionRate, emissionVariance) {
         this.particles = [];
         this.opacity = opacity;
         this.xPosition = xPosition;
@@ -126,6 +126,9 @@
         this.phraseHeight = phraseHeight;
         this.rotationAlignment = rotationAlignment;
         this.rotationSpeed = rotationSpeed;
+        this.emissionRate = emissionRate;
+        this.emissionVariance = emissionVariance;
+        this.lastEmissionTime = 0;
       }
 
       createParticle() {
@@ -136,57 +139,121 @@
       }
 
       update() {
+        const currentTime = Date.now();
+        const emissionInterval = 1000 / this.emissionRate;
+        let variance = (Math.random() * 2 - 1) * this.emissionVariance * emissionInterval;
+
+        if (currentTime - this.lastEmissionTime >= emissionInterval + variance) {
+            this.createParticle();
+            this.lastEmissionTime = currentTime;
+        }
+
         for (let i = this.particles.length - 1; i >= 0; i--) {
-          const particle = this.particles[i];
-          particle.update();
-          if (particle.alpha <= 0) {
-            this.particles.splice(i, 1);
-          }
+            const particle = this.particles[i];
+            particle.update();
+            if (particle.alpha <= 0) {
+                this.particles.splice(i, 1);
+            }
         }
       }
 
       draw() {
         for (const particle of this.particles) {
-          particle.draw();
+            particle.draw();
         }
       }
     }
 
 
-/////////////////////////////////// Emmiter Settings /////////////////////////////
 
-                   //x position, opacity, alphadecrement, length, text//
-
-
-    const particleEmitter1 = new ParticleEmitter(2 * canvas.width / 10, 0.5, 0.001, 650, "in total darkness", 'right', 0.0052);
-    const particleEmitter2 = new ParticleEmitter(3 * canvas.width / 10 + 5, 0.8, 0.0009, 510, "in total darkness", 'right', 0.0052);
-    const particleEmitter3 = new ParticleEmitter(4 * canvas.width / 10, 0.8, 0.001, 600, "or in a very large room", 'right', 0.0052);
-    const particleEmitter4 = new ParticleEmitter(5 * canvas.width / 10 + 50, 0.8, 0.0009, 500, "or in a very large room", 'left', -0.0052);
-    const particleEmitter5 = new ParticleEmitter(7 * canvas.width / 10 + 10, 0.5, 0.0005, 550, "very quietly", 'left', -0.0052);
-    const particleEmitter6 = new ParticleEmitter(8 * canvas.width / 10, 0.5, 0.001, 650, "very quietly", 'left', -0.0052);
-
-    let lastEmission = 0;
+    /////////////////////////////// Emitter Settings ///////////////////////////////
 
 
 
-//////////////////////////////// Animate ///////////////////////////
+
+    const particleEmitter1 = new ParticleEmitter(
+      /* xPosition */2 * canvas.width / 10,
+      /* Opacity */ 0.5,
+      /* Alpha Decrememt */ 0.001,
+      /* Phrase Height */ 650,
+      /* Text */ "in total darkness",
+      /* Rotation Alignment */ 'right',
+      /* Rotation Speed */ 0.0052,
+      /* Emission Rate */ 2,
+      /* Emission Variance */ 0.77);
+
+
+    const particleEmitter2 = new ParticleEmitter(
+      /* xPosition */3 * canvas.width / 10 + 5,
+      /* Opacity */ 0.8,
+      /* Alpha Decrement */ 0.0009,
+      /* Phrase Height */ 510,
+      /* Text */ "in total darkness",
+      /* Rotation Alignment */ 'right',
+      /* Rotation Speed */ 0.0052,
+      /* Emission Rate */ 3,
+      /* Emission Variance */ 0.8);
+
+
+    const particleEmitter3 = new ParticleEmitter(
+      /* xPosition */4 * canvas.width / 10,
+      /* Opacity */ 0.8,
+      /* Alpha Decrement */ 0.001,
+      /* Phrase Height */ 600,
+      /* Text */ "or in a very large room",
+      /* Rotation Alignment */ 'right',
+      /* Rotation Speed */ 0.0052,
+      /* Emission Speed */ 4,
+      /* Emission Variance */ 0.69);
+
+
+    const particleEmitter4 = new ParticleEmitter(
+      /* xPosition */5 * canvas.width / 10 + 50,
+      /* Opacity */ 0.8,
+      /* Alpha Decrement */ 0.0009,
+      /* Phrase Height */ 500,
+      /* Text */ "or in a very large room",
+      /* Rotation Alignment */ 'left',
+      /* Rotation Speed */ -0.0052,
+      /* Emission Speed */ 2,
+      /* Emission Variance */ 0.70);
+
+
+    const particleEmitter5 = new ParticleEmitter(
+      /* xPosition */7 * canvas.width / 10 + 10,
+      /* Opacity */ 0.5,
+      /* Alpha Decrement */ 0.0005,
+      /* Phrase Height */ 550,
+      /* Text */ "very quietly",
+      /* Rotation Alignment */ 'left',
+      /* Rotation Speed */ -0.0052,
+      /* Emission Speed */ 3,
+      /* Emission Variance */ 0.76);
+
+
+    const particleEmitter6 = new ParticleEmitter(
+      /* xPosition */8 * canvas.width / 10,
+      /* Opacity */ 0.5,
+      /* Alpha Decrement */ 0.001,
+      /* Phrase Height */ 650,
+      /* Text */ "very quietly",
+      /* Rotation Alignment */ 'left',
+      /* Rotation Speed */ -0.0052,
+      /* Emission Speed */ 4,
+      /* Emission Variance */ 0.775);
+
+    let frameCount = 0;
+
+
+
+
+    //////////////////////////////// Animate //////////////////////////////////
+
+
 
     function animate() {
       requestAnimationFrame(animate);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      let emissionInterval = Math.floor(60 / settings.emissionRate);
-      let variance = (Math.random() * 2 - 1) * settings.emissionVariance * emissionInterval;
-
-      if (frameCount - lastEmission >= emissionInterval + variance) {
-        particleEmitter1.createParticle();
-        particleEmitter2.createParticle();
-        particleEmitter3.createParticle();
-        particleEmitter4.createParticle();
-        particleEmitter5.createParticle();
-        particleEmitter6.createParticle();
-        lastEmission = frameCount;
-      }
 
       particleEmitter1.update();
       particleEmitter1.draw();
@@ -204,9 +271,9 @@
       frameCount++;
     }
 
-    let frameCount = 0;
     animate();
   </script>
 </body>
 </html>
+
 
